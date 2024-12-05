@@ -1,0 +1,17 @@
+﻿# User-specific files
+.vs/
+.vscode/
+.idea/
+
+# Build results
+bin/
+obj/
+
+# Configuration files
+appsettings.json
+appsettings.Development.json
+
+# Miscellaneous
+*.log
+*.vspscc
+
