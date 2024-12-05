@@ -1,0 +1,202 @@
+ @model MainModel
+@{
+    ViewData["Title"] = "Home Page";     
+    int x = Model.CountOfFilesOnPage*(Model.PaginationItem.CurrentPage-1)+1;
+        
+}
+
+
+<div class=container-fluid>
+
+    @if(ViewBag.Message != null)
+    {       
+        <div id="alert" class="alert alert-@(ViewBag.Signal == "Ok" ? "success"  : "warning") fade show">
+            @ViewBag.Message
+         </div>
+        
+    }
+
+    <form method="post" action="" >
+        <div class="row m-3 g-3 align-items-center justify-content-center ">
+            <div class="col-auto">
+                <p class="fw-bold col-form-label fs-4">Filtr</p>
+            </div>
+            <div class="col-auto">
+                <label for="fileName" class="col-form-label" >FileName:</label>
+            </div>
+            <div class="col-auto">
+                <input class="form-control" name="FiltrationItem.FileName" type="text" id="fileName" value="@Model.FiltrationItem.FileName"/>
+            </div>
+            <div class="col-auto">
+                <label for="dateFrom" class="col-form-label">From:</label>
+            </div>
+            <div class="col-auto">
+                <input class="form-control" name="FiltrationItem.From" type="date" id="dateFrom" value="@Model.FiltrationItem.From.ToString("yyyy-MM-dd")" />
+            </div>           
+            <div class="col-auto">
+                <label for="dateTo" class="col-form-label">To:</label>
+            </div>
+            <div class="col-auto">
+                <input class="form-control" name="FiltrationItem.To" type="date" id="dateTo" value="@Model.FiltrationItem.To.ToString("yyyy-MM-dd")" />
+            </div>
+
+            <div class="col-auto">
+                |
+            </div>
+            <div class="col-auto">
+                <p class="fw-bold col-form-label fs-4">Sort</p>
+            </div>
+            
+            <div class="col-auto">
+                <select class=" col-form-label" name="CurrentSort" id="currentSort">
+                    @foreach(var sortName in Model.SortedBy)
+                    {
+                        if (sortName == Model.CurrentSort)
+                        {
+                            <option value="@sortName" selected>@sortName</option>
+                        }
+                        else
+                        {
+                            <option value="@sortName">@sortName</option> 
+                        }
+                        
+                    }
+                </select>
+            </div>
+
+            <div class="col-auto">
+                <input class="btn btn-primary px-5" type="submit" value="Aply" />
+            </div>
+
+
+           
+        </div>
+    </form>
+
+    <div class="table-responsive">
+    <table class="table mb-3" id="table">
+        <thead class="table-dark">
+            <tr>
+                <th>Number</th>
+                <th>Name</th>
+                <th>CreateAt</th>              
+                <th>Size (kB)</th>
+                <th>Version</th>
+                <th>UserId</th>
+                <th></th>
+                <th></th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+           
+            @foreach (var file in Model.Models)
+            {
+                <tr  data-main="@file.Current.Id">
+                    <td>@(x++)
+                        @if(file.Children.Count>0){
+                            <i class="fa fa-angle-double-down" aria-hidden="true"></i>
+                        }
+                    </td>                   
+                    <td>@file.Current.Name</td>
+                    <td>@file.Current.CreateAt</td>
+                    <td>@(file.Current.Size == null? 0 : @file.Current.Size)</td>
+                    <td>@file.Current.Version</td>
+                    <td>@file.Current.UserId</td>
+                    <td></td>
+                    <td>                      
+                        <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal"
+                                fileName="@file.Current.Name" fileId="@file.Current.Id" onclick="ActionDelete(this)" >
+                            Remove
+                        </button>
+                        
+                    </td>
+                    <td>
+                        <button class="btn btn-success" fileId="@file.Current.Id" onclick="downLoadFile(this)">Download</button>
+                    </td>
+                </tr>
+                @if (file.Children.Count > 0)
+                {
+                    int y = 1;
+                    @foreach (var item in file.Children)
+                    {
+                        <tr data-child="@file.Current.Id" hidden>                         
+                            <td class="ms-3">@(x-1).@(y++)</td>
+                            <td>@item.Name</td>
+                            <td>@item.CreateAt</td>
+                            <td>@(item.Size == null ? 0 : @item.Size)</td>
+                            <td>@item.Version</td>
+                            <td>@item.UserId</td>
+                            <td>
+                                <button class="btn btn-info" fileName="@item.Name" fileId="@item.Id" onclick="makePrimary(this)">
+                                    Make Primary                                    
+                                </button>
+                            </td>
+                            <td>
+                                <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal"
+                                        fileName="@item.Name" fileId="@item.Id" onclick="ActionDelete(this)">
+                                    Remove
+                                </button>
+
+                            </td>
+                            <td>
+                                <button class="btn btn-success" fileId="@item.Id" onclick="downLoadFile(this)">Download</button>
+                            </td>
+
+                        </tr>
+                    }
+                   
+
+                }
+
+            }
+        </tbody>
+    </table>
+   </div>
+
+      <div class="container-fluid d-flex justify-content-center align-items-center m-3">
+        <button class="btn btn-secondary  btn-sm" id="leftButton" style="@(Model.PaginationItem.IsBefore ? "" : "display: none;")" onclick="sendInfo(event)">
+               <i class="fa fa-long-arrow-left" aria-hidden="true"></i>
+            </button>
+        <button type="button" id="button" class="btn btn-secondary mx-5 fs-5 fw-bold disabled  btn-sm">
+                @Model.PaginationItem.CurrentPage
+            </button>
+        <button class="btn btn-secondary " id="rightButton" style="@(Model.PaginationItem.IsAfter ? "" : "display: none;" )" onclick="sendInfo(event)">
+            <i class="fa fa-long-arrow-right" aria-hidden="true"></i>
+            </button>
+      </div>
+
+
+    <form method="post" action="Home/UploadFile" enctype="multipart/form-data" onsubmit="return validateForm()">
+       <label for="file">Файл:</label>
+        <input class="btn btn-light" name="file" type="file" id="fileN"/>
+       <input class="btn btn-primary" type="submit" value="Upload" />
+   </form>  
+
+
+
+
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Удаление файла</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="message"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal" onclick="deleteData()">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+</div>
+
+

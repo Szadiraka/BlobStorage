@@ -1,0 +1,22 @@
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*",
+  "ConnectionStrings": {
+    "connectToDb": "Server={yourserver}; Database={your database};Integrated Security=True;TrustServerCertificate=True;",
+    "connectToBlob": "{your_blob_connection_string}"
+  },
+
+  "BlobStorageSettings": {
+    "ContainerName": "{your_container_name}"
+  },
+
+  "CountElements": {
+    "numbers": 4
+  }
+
+}
